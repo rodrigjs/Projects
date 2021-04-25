@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Polls Results with Chart.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Comic Sans MS", cursive sans-serif;
+        background-color: #eee;
+        color: #111;
+      }
+      h1 {
+        text-align: center;
+        margin: 1.25rem 0 0.25rem 0;
+      }
+      .chart-container {
+        position: relative;
+        width: 45vw;
+        height: 22.5vw;
+        margin: auto;
+      }
+      canvas {
+        border: 3px solid blue;
+      }
+      .poll {
+        background-color: #fff;
+        color: #333;
+        width: 30vw;
+        margin: 1.75rem auto 1rem auto;
+        border: 1px solid #ccc;
+        border-radius: 0.25rem;
+      }
+      .poll-heading {
+        padding: 1rem;
+        border-bottom: 1px solid;
+        border-image: linear-gradient(to right, transparent, #333, transparent);
+      }
+      .poll-body {
+        padding: 1rem;
+      }
+      .poll-body ul {
+        list-style-type: none;
+        border: 1px solid #ccc;
+        border-radius: 0.5rem;
+      }
+      .poll-body li label {
+        display: block;
+        width: 100%;
+        padding: 0.5rem;
+      }
+      .poll-body li label:hover {
+        background-color: #eee;
+      }
+      .poll-body li:first-child label {
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+      }
+      .poll-body li:last-child label {
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+      }
+      .poll-body li label input[type="radio"] {
+        margin-right: 0.5rem;
+      }
+      .poll-body li label input[type="radio"]:checked + span {
+        font-weight: bold;
+      }
+      .poll-footer {
+        padding-bottom: 1rem;
+        text-align: center;
+      }
+      .poll-footer button {
+        background-color: #777;
+        color: #fff;
+        padding: 0.5rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        border: none;
+        outline: none;
+        width: 7rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .poll-footer button:hover {
+        background-color: #333;
+      }
+      .poll-footer button:active {
+        background-color: #111;
+      }
+      @media(max-width: 1200px) {
+        .chart-container {
+          width: 65vw;
+          height: 32.5vw;
+        }
+        .poll {
+          width: 50%;
+        }
+      }
+      @media(max-width: 992px) {
+        .chart-container {
+         width: 75vw;
+          height: 37.5vw;
+        }
+        .poll {
+          width: 60%;
+        }
+      }
+      @media(max-width: 767px) {
+        html {
+         font-size: 14px;
+        }
+        h1 {
+          font-size: 1.75rem;
+        }
+        .chart-container {
+          width: 95vw;
+          height: 47.5vw;
+        }
+        .poll {
+          width: 80%;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+
+    <h1>Poll Results with Chart.js</h1>
+    <div class="chart-container">
+      <canvas id="chart" width="200" height="100"></canvas>
+    </div>
+
+    <form id="pollForm">
+      <div class="poll">
+        <div class="poll-heading">
+          <h3 class="poll-title">Favorite Superhero</h3>
+        </div>
+        <div class="poll-body">
+          <ul>
+            <li>
+              <label><input type="radio" name="pollOptions" value="Spider-Man"><span>Spider-Man</span></label>
+            </li>
+            <li>
+              <label><input type="radio" name="pollOptions" value="Superman"><span>Superman</span></label>
+            </li>
+            <li>
+              <label><input type="radio" name="pollOptions" value="Batman"><span>Batman</span></label>
+            </li>
+            <li>
+              <label><input type="radio" name="pollOptions" value="Son Goku"><span>Son Goku</span></label>
+            </li>
+            <li>
+              <label><input type="radio" name="pollOptions" value="Hulk"><span>Hulk</span></label>
+            </li>
+            <li>
+              <label><input type="radio" name="pollOptions" value="Wolverine"><span>Wolverine</span></label>
+            </li>
+            <li>
+              <label><input type="radio" name="pollOptions" value="Other"><span>Other</span></label>
+            </li>
+          </ul>
+        </div>
+        <div class="poll-footer">
+          <button type="submit">Vote</button>
+        </div>
+      </div>
+    </form>
+
+    <script>
+      const pollData = [
+      {
+        option: "Spider-Man",
+        votes: 11,
+        color: "rgba(255, 99, 132)"
+      },
+      {
+        option: "Superman",
+        votes: 8,
+        color: "rgba(54, 162, 235)"
+      },
+      {
+        option: "Batman",
+        votes: 11,
+        color: "rgba(36, 36, 36)"
+      },
+      {
+        option: "Son Goku",
+        votes: 5,
+        color: "rgba(255, 159, 64)"
+      },
+      {
+        option: "Hulk",
+        votes: 3,
+        color: "rgba(75, 192, 192)"
+      },
+      {
+        option: "Wolverine",
+        votes: 8,
+        color: "rgba(255, 206, 86)"
+      },
+      {
+        option: "Other",
+        votes: 10,
+        color: "rgba(153, 102, 255)"
+      }
+    ];
+
+    const pollForm = document.querySelector("#pollForm");
+    pollForm.addEventListener("submit", pollFormSubmit);
+
+    function pollFormSubmit(event) {
+      event.preventDefault();
+      const pollOptionInput = pollForm.querySelector("input[name='pollOptions']:checked");
+      if(pollOptionInput) {
+        const pollOptionValue = pollOptionInput.value;
+        pollData.find(pollOption => pollOption.option === pollOptionValue).votes++;
+        pollChart.data.datasets[0].data = pollData.map(pollOption => pollOption.votes);
+        pollChart.update();
+        pollForm.reset();
+      }
+    }
+
+    Chart.defaults.global.defaultFontFamily = '"Comic Sans MS", cursive sans-serif';
+
+    const ctx = document.getElementById('chart').getContext('2d');
+    const pollChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: pollData.map(pollOption => pollOption.option),
+        datasets: [{
+            label: '# of Votes',
+            data: pollData.map(pollOption => pollOption.votes),
+            backgroundColor: pollData.map(pollOption => pollOption.color),
+            borderWidth: 3
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        },
+        title: {
+          display: true,
+          text: 'Favorite Superheroes',
+          fontColor: "#333",
+          fontSize: 20,
+          padding: 20
+        },
+        legend: {
+          display: false
+        }
+      }
+    });
+    </script>
+  </body>
+</html>
